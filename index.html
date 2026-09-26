@@ -1,0 +1,2651 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShareMap Component Playground | Thư viện sharemap-maplib-reactjs</title>
+  <meta name="description" content="Component gallery và live playground tương tác dành cho lập trình viên sử dụng thư viện sharemap-maplib-reactjs. Xem code, chỉnh props và chạy thử trực tiếp trên bản đồ.">
+
+  <!-- MapLibre GL CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
+  
+  <style>
+    /* ─── CSS Design Tokens & Themes ────────────────────────────────────── */
+    :root {
+      --bg-page: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-surface-elevated: #ffffff;
+      --bg-sidebar: #f1f5f9;
+      --bg-active: #e2e8f0;
+      --bg-input: #ffffff;
+      --border-subtle: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #64748b;
+      
+      --accent: #0284c7;
+      --accent-hover: #0369a1;
+      --accent-subtle: #e0f2fe;
+      --accent-text: #0369a1;
+      --accent-border: #bae6fd;
+
+      --editor-bg: #090d16;
+      --editor-gutter: #0f172a;
+      --editor-text: #f1f5f9;
+      --editor-border: #1e293b;
+      
+      --status-ready: #10b981;
+      --status-error: #ef4444;
+      --status-busy: #f59e0b;
+
+      --sidebar-width: 270px;
+      --header-height: 58px;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    [data-theme="dark"] {
+      --bg-page: #0b0f19;
+      --bg-surface: #111827;
+      --bg-surface-elevated: #1f2937;
+      --bg-sidebar: #0d1322;
+      --bg-active: #1f2937;
+      --bg-input: #1f2937;
+      --border-subtle: #1f2937;
+      --border-strong: #374151;
+      --text-primary: #f9fafb;
+      --text-secondary: #9ca3af;
+      --text-muted: #6b7280;
+      
+      --accent: #38bdf8;
+      --accent-hover: #7dd3fc;
+      --accent-subtle: rgba(56, 189, 248, 0.12);
+      --accent-text: #38bdf8;
+      --accent-border: #0369a1;
+
+      --editor-bg: #030712;
+      --editor-gutter: #0b0f19;
+      --editor-text: #f9fafb;
+      --editor-border: #1f2937;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-page);
+      color: var(--text-primary);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    /* ─── Top App Header ────────────────────────────────────────────────── */
+    .app-header {
+      height: var(--header-height);
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      flex-shrink: 0;
+      z-index: 30;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--text-primary);
+      cursor: pointer;
+    }
+
+    .brand svg {
+      width: 24px;
+      height: 24px;
+      color: var(--accent);
+    }
+
+    .badge-pill {
+      font-size: 0.72rem;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      background: var(--accent-subtle);
+      color: var(--accent-text);
+      font-weight: 600;
+      border: 1px solid var(--accent-border);
+    }
+
+    .header-center {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-secondary);
+      font-size: 0.88rem;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .icon-btn {
+      width: 36px;
+      height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-surface);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .icon-btn:hover {
+      color: var(--text-primary);
+      border-color: var(--accent);
+      background: var(--bg-active);
+    }
+
+    .mobile-menu-btn {
+      display: none;
+    }
+
+    /* ─── Main App Layout: Sidebar + Playground ──────────────────────────── */
+    .app-body {
+      display: flex;
+      flex: 1;
+      height: calc(100vh - var(--header-height));
+      overflow: hidden;
+    }
+
+    /* Left Sidebar: Component Catalog */
+    .sidebar-catalog {
+      width: var(--sidebar-width);
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border-subtle);
+      overflow-y: auto;
+      padding: 16px 12px 32px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .sidebar-search-box {
+      position: relative;
+    }
+
+    .sidebar-search-input {
+      width: 100%;
+      padding: 8px 12px 8px 34px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-strong);
+      background: var(--bg-input);
+      color: var(--text-primary);
+      font-size: 0.85rem;
+      outline: none;
+      transition: border 0.15s;
+    }
+
+    .sidebar-search-input:focus {
+      border-color: var(--accent);
+    }
+
+    .sidebar-search-icon {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .component-group-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      padding: 0 8px;
+    }
+
+    .component-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .component-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 0.86rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s;
+      user-select: none;
+    }
+
+    .component-item:hover {
+      background: var(--bg-active);
+      color: var(--text-primary);
+    }
+
+    .component-item.active {
+      background: var(--accent-subtle);
+      color: var(--accent-text);
+      font-weight: 600;
+    }
+
+    .tag-badge {
+      font-size: 0.68rem;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-weight: 500;
+      font-family: var(--font-mono);
+    }
+
+    .tag-adv { background: rgba(147, 51, 234, 0.15); color: #9333ea; }
+    .tag-legacy { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+
+    /* Playground Main Area */
+    .playground-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-page);
+      overflow-y: auto;
+    }
+
+    /* Component Header & Toolbar */
+    .playground-header {
+      padding: 16px 24px;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .comp-info-title-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .comp-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .comp-desc {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      margin-top: 3px;
+    }
+
+    .toolbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      border: 1px solid transparent;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #ffffff;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn-secondary {
+      background: var(--bg-surface-elevated);
+      border-color: var(--border-strong);
+      color: var(--text-primary);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-active);
+    }
+
+    .auto-run-toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      user-select: none;
+      padding: 0 4px;
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      background: var(--bg-sidebar);
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--status-ready);
+    }
+
+    .status-dot.busy { background: var(--status-busy); }
+    .status-dot.error { background: var(--status-error); }
+
+    /* Playground Work Area: Split Editor & Preview */
+    .playground-workspace {
+      display: flex;
+      flex: 1;
+      min-height: 480px;
+      border-bottom: 1px solid var(--border-subtle);
+      overflow: hidden;
+    }
+
+    /* Left Pane: Code Editor */
+    .pane-editor {
+      width: 50%;
+      display: flex;
+      flex-direction: column;
+      background: var(--editor-bg);
+      border-right: 1px solid var(--border-subtle);
+      position: relative;
+    }
+
+    .editor-pane-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 14px;
+      background: var(--editor-gutter);
+      border-bottom: 1px solid var(--editor-border);
+      color: #9ca3af;
+      font-size: 0.78rem;
+      font-family: var(--font-mono);
+    }
+
+    .editor-container {
+      flex: 1;
+      display: flex;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .line-numbers {
+      width: 44px;
+      padding: 14px 6px 14px 10px;
+      background: var(--editor-gutter);
+      color: #64748b;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      line-height: 1.55;
+      text-align: right;
+      user-select: none;
+      border-right: 1px solid var(--editor-border);
+      overflow: hidden;
+    }
+
+    .code-textarea {
+      flex: 1;
+      padding: 14px;
+      background: transparent;
+      color: var(--editor-text);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      line-height: 1.55;
+      border: none;
+      outline: none;
+      resize: none;
+      white-space: pre;
+      overflow: auto;
+      tab-size: 2;
+    }
+
+    /* Right Pane: Live Map Preview */
+    .pane-preview {
+      width: 50%;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-surface);
+      position: relative;
+    }
+
+    .preview-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 14px;
+      background: var(--bg-sidebar);
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+    }
+
+    .map-container-box {
+      flex: 1;
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: #e2e8f0;
+    }
+
+    #liveMapElement {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .error-banner {
+      display: none;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 10px 16px;
+      background: rgba(239, 68, 68, 0.95);
+      color: #ffffff;
+      font-size: 0.82rem;
+      font-family: var(--font-mono);
+      z-index: 25;
+      white-space: pre-wrap;
+      box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.15);
+    }
+
+    .error-banner.show {
+      display: block;
+    }
+
+    /* Quick Controls & Props Section */
+    .playground-bottom-section {
+      padding: 20px 24px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .quick-controls-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 16px 20px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .controls-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+    }
+
+    .control-item {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .control-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .control-input {
+      padding: 7px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-strong);
+      background: var(--bg-input);
+      color: var(--text-primary);
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    .control-input:focus {
+      border-color: var(--accent);
+    }
+
+    .control-range-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .control-range {
+      flex: 1;
+      cursor: pointer;
+    }
+
+    .control-color-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .control-color {
+      width: 36px;
+      height: 36px;
+      padding: 2px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-strong);
+      cursor: pointer;
+    }
+
+    /* Props Table Section */
+    .props-doc-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 18px 20px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .props-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.85rem;
+      margin-top: 10px;
+    }
+
+    .props-table th {
+      padding: 8px 12px;
+      background: var(--bg-sidebar);
+      color: var(--text-primary);
+      font-weight: 600;
+      border-bottom: 1px solid var(--border-strong);
+    }
+
+    .props-table td {
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      vertical-align: top;
+    }
+
+    .props-table code {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      padding: 1px 5px;
+      background: var(--bg-sidebar);
+      border-radius: 4px;
+      color: var(--accent-text);
+    }
+
+    .note-box {
+      margin-top: 14px;
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      background: var(--accent-subtle);
+      border-left: 4px solid var(--accent);
+      font-size: 0.85rem;
+      color: var(--accent-text);
+    }
+
+    /* ─── Responsive Adjustments ────────────────────────────────────────── */
+    @media (max-width: 1024px) {
+      .playground-workspace {
+        flex-direction: column;
+        height: auto;
+      }
+      .pane-editor, .pane-preview {
+        width: 100%;
+        height: 380px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar-catalog {
+        position: fixed;
+        top: var(--header-height);
+        bottom: 0;
+        left: 0;
+        z-index: 40;
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+        box-shadow: var(--shadow-lg);
+      }
+      .sidebar-catalog.open {
+        transform: translateX(0);
+      }
+      .mobile-menu-btn {
+        display: inline-flex;
+      }
+      .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 35;
+      }
+      .sidebar-overlay.open {
+        display: block;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ─── App Header ──────────────────────────────────────────────────────── -->
+  <header class="app-header">
+    <div class="header-left">
+      <button class="icon-btn mobile-menu-btn" id="btnToggleSidebar" aria-label="Mở danh mục component">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+      <div class="brand" onclick="selectComponent('sharemap-libre')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
+          <line x1="8" y1="2" x2="8" y2="18"></line>
+          <line x1="16" y1="6" x2="16" y2="22"></line>
+        </svg>
+        <span>ShareMap</span>
+        <span class="badge-pill">Playground</span>
+      </div>
+    </div>
+
+    <div class="header-center">
+      <span>Bản đồ số: <strong style="color:var(--accent);">ShareMap Vector Tiles</strong> · Tọa độ mẫu: <strong>[106.660172, 10.762622]</strong> (TP. Hồ Chí Minh)</span>
+    </div>
+
+    <div class="header-right">
+      <button class="icon-btn" id="btnThemeToggle" aria-label="Đổi giao diện sáng/tối">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+      </button>
+
+      <a href="https://github.com" target="_blank" rel="noreferrer" class="icon-btn" aria-label="GitHub">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+        </svg>
+      </a>
+    </div>
+  </header>
+
+  <!-- Mobile Drawer Overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- ─── Body: Sidebar & Live Playground ────────────────────────────────── -->
+  <div class="app-body">
+
+    <!-- Left Sidebar: Component Catalog -->
+    <aside class="sidebar-catalog" id="sidebarCatalog">
+      <div class="sidebar-search-box">
+        <svg class="sidebar-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" class="sidebar-search-input" id="catalogSearchInput" placeholder="Lọc component..." autocomplete="off">
+      </div>
+
+      <!-- Groups rendered via JS -->
+      <div id="catalogGroupContainer"></div>
+    </aside>
+
+    <!-- Right: Playground Main -->
+    <main class="playground-main">
+      
+      <!-- Top Action Toolbar -->
+      <div class="playground-header">
+        <div>
+          <div class="comp-info-title-row">
+            <h1 class="comp-title" id="currentCompTitle">ShareMapLibre</h1>
+            <span class="badge-pill" id="currentCompGroup">Core Map</span>
+          </div>
+          <p class="comp-desc" id="currentCompDesc">Khởi tạo bản đồ tương tác WebGL MapLibre với cấu hình chuẩn của ShareMap.</p>
+        </div>
+
+        <div class="toolbar-actions">
+          <label class="auto-run-toggle">
+            <input type="checkbox" id="chkAutoRun" checked>
+            <span>Tự chạy (Auto-run)</span>
+          </label>
+
+          <button class="btn btn-secondary" id="btnResetCode" title="Khôi phục code & props về mặc định">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+              <path d="M3 3v5h5"></path>
+            </svg>
+            <span>Reset</span>
+          </button>
+
+          <button class="btn btn-secondary" id="btnCopyCode" title="Sao chép toàn bộ code">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            <span id="txtCopyStatus">Copy Code</span>
+          </button>
+
+          <button class="btn btn-primary" id="btnRunCode">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            <span>Chạy (Run)</span>
+          </button>
+
+          <div class="status-indicator">
+            <span class="status-dot" id="statusDot"></span>
+            <span id="statusLabel">Ready</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Split View: Editor (Left) & Live Map (Right) -->
+      <div class="playground-workspace" id="workspaceContainer">
+        
+        <!-- Left: Code Editor -->
+        <div class="pane-editor">
+          <div class="editor-pane-header">
+            <span>CONSUMER JSX CODE (TSX)</span>
+            <span>import { ... } from 'sharemap-maplib-reactjs'</span>
+          </div>
+          <div class="editor-container">
+            <div class="line-numbers" id="editorLineNumbers">1</div>
+            <textarea class="code-textarea" id="codeEditor" spellcheck="false"></textarea>
+          </div>
+        </div>
+
+        <!-- Right: Live Map Canvas -->
+        <div class="pane-preview">
+          <div class="preview-header">
+            <span>LIVE MAP PREVIEW (ShareMap Vector Tiles: sharemap.json)</span>
+            <span id="mapCoordinateDisplay">[106.660172, 10.762622] · Zoom 13</span>
+          </div>
+          <div class="map-container-box">
+            <div id="liveMapElement"></div>
+            <div class="error-banner" id="errorBanner"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom Panel: Quick Props & Documentation -->
+      <div class="playground-bottom-section">
+        
+        <!-- Quick Props Control Form -->
+        <div class="quick-controls-card">
+          <div class="controls-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+            <span>Quick Props (Chỉnh nhanh thuộc tính — tự động sinh code & cập nhật bản đồ)</span>
+          </div>
+
+          <div class="controls-grid" id="controlsGrid">
+            <!-- Dynamic Controls inserted by JS -->
+          </div>
+        </div>
+
+        <!-- Props API Documentation -->
+        <div class="props-doc-card">
+          <div class="controls-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            <span>Bảng Props cốt lõi của Component</span>
+          </div>
+
+          <table class="props-table">
+            <thead>
+              <tr>
+                <th style="width: 22%;">Tên Prop</th>
+                <th style="width: 20%;">Kiểu dữ liệu</th>
+                <th style="width: 15%;">Bắt buộc?</th>
+                <th>Mô tả & Công dụng</th>
+              </tr>
+            </thead>
+            <tbody id="propsTableBody">
+              <!-- Inserted dynamically -->
+            </tbody>
+          </table>
+
+          <div class="note-box" id="componentNoteBox">
+            <!-- Note inserted by JS -->
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- MapLibre GL JS SDK -->
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+
+  <!-- ─── Core Playground Logic ─────────────────────────────────────────── -->
+  <script>
+    /* ─── Standard Mock Data & Coordinates around HCMC ──────────────────── */
+    const DEMO_CENTER = [106.660172, 10.762622]; // [lng, lat] TP. Hồ Chí Minh
+    const DEMO_ZOOM = 13;
+
+    const DEMO_ROUTE = [
+      [106.660172, 10.762622],
+      [106.667350, 10.769120],
+      [106.675420, 10.776510],
+      [106.682220, 10.782900],
+    ];
+
+    const DEMO_POLYGON = [
+      [106.650000, 10.755000],
+      [106.670000, 10.755000],
+      [106.670000, 10.770000],
+      [106.650000, 10.770000],
+      [106.650000, 10.755000]
+    ];
+
+    const DEMO_BUILDING_FOOTPRINT = [
+      [106.665000, 10.765000],
+      [106.668000, 10.765000],
+      [106.668000, 10.768000],
+      [106.665000, 10.768000],
+      [106.665000, 10.765000]
+    ];
+
+    /* ─── Component Demo Registry ────────────────────────────────────────── */
+    const COMPONENT_DEMOS = [
+      // 1. Core Map
+      {
+        id: 'sharemap-libre',
+        title: 'ShareMapLibre',
+        group: 'Core Map',
+        badge: 'Core',
+        desc: 'Component gốc khởi tạo WebGL canvas, điều khiển camera và quản lý Engine.',
+        defaults: {
+          lng: 106.660172,
+          lat: 10.762622,
+          zoom: 13,
+          style: 'sharemap'
+        },
+        controls: [
+          { key: 'lng', label: 'Kinh độ (lng)', type: 'number', step: 0.0001 },
+          { key: 'lat', label: 'Vĩ độ (lat)', type: 'number', step: 0.0001 },
+          { key: 'zoom', label: 'Thu phóng (zoom)', type: 'range', min: 1, max: 20 },
+          { key: 'style', label: 'Bản đồ nền (style)', type: 'select', options: ['sharemap', 'sharemap-streets', 'bright', 'dark', 'positron'] }
+        ],
+        generateCode: (p) => `import React from 'react';
+import { ShareMapLibre } from 'sharemap-maplib-reactjs';
+
+export default function BasicMapExample() {
+  return (
+    <div style={{ width: '100%', height: '100%' }}>
+      <ShareMapLibre
+        style="${p.style}"
+        center={[${p.lng}, ${p.lat}]}
+        zoom={${p.zoom}}
+        onMapReady={(handle) => console.log('MapLibre sẵn sàng:', handle)}
+      />
+    </div>
+  );
+}`,
+        propsDoc: [
+          { name: 'center', type: '[number, number]', required: true, desc: 'Tọa độ tâm bản đồ [longitude, latitude].' },
+          { name: 'zoom', type: 'number', required: false, desc: 'Mức độ thu phóng ban đầu (0 đến 24).' },
+          { name: 'style', type: 'StyleAlias | string', required: false, desc: 'Tên alias style ("sharemap", "bright", "dark") hoặc URL JSON style.' },
+          { name: 'onMapReady', type: '(handle: MapHandle) => void', required: false, desc: 'Callback nhận đối tượng điều khiển MapHandle.' },
+          { name: 'engineOptions', type: 'ShareMapEngineOptions', required: false, desc: 'Cấu hình an toàn và nguồn DEM cho Engine.' }
+        ],
+        notes: 'Thứ tự tọa độ luôn là [Kinh độ, Vĩ độ] ([lng, lat]). Không đảo ngược tránh nhảy bản đồ ra biển.'
+      },
+      {
+        id: 'map-client',
+        title: 'MapClient',
+        group: 'Core Map',
+        badge: 'Advanced',
+        desc: 'Component headless cấp thấp cung cấp context MapContext và EngineContext.',
+        defaults: {
+          lng: 106.660172,
+          lat: 10.762622,
+          zoom: 13
+        },
+        controls: [
+          { key: 'lng', label: 'Kinh độ (lng)', type: 'number', step: 0.0001 },
+          { key: 'lat', label: 'Vĩ độ (lat)', type: 'number', step: 0.0001 },
+          { key: 'zoom', label: 'Thu phóng (zoom)', type: 'range', min: 1, max: 20 }
+        ],
+        generateCode: (p) => `import { MapClient, useShareMapEngine } from 'sharemap-maplib-reactjs';
+
+export default function HeadlessExample() {
+  return (
+    <MapClient center={[${p.lng}, ${p.lat}]} zoom={${p.zoom}}>
+      {/* Component con có thể gọi useShareMapEngine() */}
+    </MapClient>
+  );
+}`,
+        propsDoc: [
+          { name: 'center', type: '[number, number]', required: true, desc: 'Tâm bản đồ [lng, lat].' },
+          { name: 'zoom', type: 'number', required: false, desc: 'Mức zoom ban đầu.' }
+        ],
+        notes: 'Chỉ sử dụng MapClient khi bạn cần kiểm soát sâu vòng đời khởi tạo canvas và tùy biến React Suspense fallback.'
+      },
+      {
+        id: 'attribution-control',
+        title: 'AttributionControl',
+        group: 'Core Map',
+        badge: 'Component',
+        desc: 'Hiển thị bản quyền dữ liệu bản đồ ShareMap và OpenStreetMap.',
+        defaults: {
+          lng: 106.660172,
+          lat: 10.762622,
+          zoom: 13,
+          compact: true
+        },
+        controls: [
+          { key: 'compact', label: 'Thu gọn (compact)', type: 'boolean' }
+        ],
+        generateCode: (p) => `import { ShareMapLibre, AttributionControl } from 'sharemap-maplib-reactjs';
+
+export default function AttributionExample() {
+  return (
+    <ShareMapLibre center={[106.660172, 10.762622]} zoom={13} attributionControl={false}>
+      <AttributionControl compact={${p.compact}} position="bottom-right" />
+    </ShareMapLibre>
+  );
+}`,
+        propsDoc: [
+          { name: 'compact', type: 'boolean', required: false, desc: 'Thu gọn attribution thành icon (i) trên màn hình nhỏ.' },
+          { name: 'position', type: 'string', required: false, desc: 'Vị trí góc: top-right, bottom-right, bottom-left.' }
+        ],
+        notes: 'Giữ nguyên attribution để tuân thủ quyền tác giả dữ liệu địa lý theo quy định bản quyền.'
+      },
+
+      // 2. Map Content
+      {
+        id: 'add-marker',
+        title: 'AddMarker',
+        group: 'Map Content',
+        badge: 'Component',
+        desc: 'Đặt điểm đánh dấu DOM marker trực quan tại tọa độ trên bản đồ.',
+        defaults: {
+          lng: 106.660172,
+          lat: 10.762622,
+          zoom: 14,
+          label: 'Hồ Chí Minh Center',
+          color: '#ef4444',
+          emoji: '📍'
+        },
+        controls: [
+          { key: 'lng', label: 'Kinh độ (lng)', type: 'number', step: 0.0001 },
+          { key: 'lat', label: 'Vĩ độ (lat)', type: 'number', step: 0.0001 },
+          { key: 'zoom', label: 'Thu phóng (zoom)', type: 'range', min: 1, max: 20 },
+          { key: 'label', label: 'Tên nhãn (label)', type: 'text' },
+          { key: 'emoji', label: 'Emoji Marker', type: 'text' },
+          { key: 'color', label: 'Màu pin (color)', type: 'color' }
+        ],
+        generateCode: (p) => `import { ShareMapLibre, AddMarker } from 'sharemap-maplib-reactjs';
+
+export default function MarkerExample() {
+  return (
+    <ShareMapLibre center={[${p.lng}, ${p.lat}]} zoom={${p.zoom}}>
+      <AddMarker
+        id="demo-marker"
+        lng={${p.lng}}
+        lat={${p.lat}}
+        label="${p.label}"
+        emoji="${p.emoji}"
+        color="${p.color}"
+      />
+    </ShareMapLibre>
+  );
+}`,
+        propsDoc: [
+          { name: 'id', type: 'string', required: true, desc: 'Định danh duy nhất của marker.' },
+          { name: 'lng', type: 'number', required: true, desc: 'Kinh độ (Longitude).' },
+          { name: 'lat', type: 'number', required: true, desc: 'Vĩ độ (Latitude).' },
+          { name: 'label', type: 'string', required: false, desc: 'Nhãn chữ hiển thị popup khi click.' },
+          { name: 'emoji', type: 'string', required: false, desc: 'Ký tự Emoji trung tâm (vd: 📍, 🏢, 🚗).' },
+          { name: 'color', type: 'string', required: false, desc: 'Màu sắc pin định dạng HEX/RGB.' },
+          { name: 'bearing', type: 'number', required: false, desc: 'Góc xoay marker (0 - 360 độ).' }
+        ],
+        notes: 'DOM marker tạo phần tử HTML thật. Phù hợp cho < 100 điểm. Dữ liệu lớn nên dùng layer GPU symbol/circle.'
+      },
+      {
+        id: 'add-icon',
+        title: 'AddIcon',
+        group: 'Map Content',
+        badge: 'Component',
+        desc: 'Đăng ký hình ảnh icon vào style bản đồ để dùng cho các layer biểu tượng.',
+        defaults: {
+          lng: 106.660172,
+          lat: 10.762622,
+          zoom: 14,
+          iconId: 'custom-flag',
+          url: 'https://cdn-icons-png.flaticon.com/512/399/399427.png',
+          pixelRatio: 2
+        },
+        controls: [
+          { key: 'iconId', label: 'Mã icon (iconId)', type: 'text' },
+          { key: 'url', label: 'Đường dẫn ảnh (URL)', type: 'text' }
+        ],
+        generateCode: (p) => `import { ShareMapLibre, AddIcon } from 'sharemap-maplib-reactjs';
+
+export default function IconExample() {
+  return (
+    <ShareMapLibre center={[${p.lng}, ${p.lat}]} zoom={${p.zoom}}>
+      <AddIcon
+        id="${p.iconId}"
+        url="${p.url}"
+        pixelRatio={2}
+      />
+    </ShareMapLibre>
+  );
+}`,
+        propsDoc: [
+          { name: 'id', type: 'string', required: true, desc: 'Tên định danh icon đăng ký vào style.' },
+          { name: 'url', type: 'string', required: true, desc: 'URL ảnh tải về (Base64 data URL hoặc host nằm trong whitelist).' },
+          { name: 'pixelRatio', type: 'number', required: false, desc: 'Tỷ lệ pixel màn hình Retina (1, 2 hoặc 3).' }
+        ],
+        notes: 'Hỗ trợ data:image/png;base64,... hoặc URL từ host an toàn (allowedIconHosts).'
+      },
+      {
+        id: 'add-route',
+        title: 'AddRoute',
+        group: 'Map Content',
+        badge: 'Component',
+        desc: 'Vẽ tuyến đường LineString đa giác có viền, nét đứt, nhãn và tự động canh camera.',
+        defaults: {
+          lng: 106.660172,
+          lat: 10.762622,
+          zoom: 13,
+          color: '#3b82f6',
+          width: 8,
+          borderColor: '#1e3a8a',
+          borderWidth: 12,
+          label: 'Tuyến giao hàng số 1',
+          dashed: false,
+          fitCamera: true
+        },
+        controls: [
+          { key: 'color', label: 'Màu tuyến chính', type: 'color' },
+          { key: 'width', label: 'Độ dày (width)', type: 'range', min: 2, max: 20 },
+          { key: 'borderColor', label: 'Màu viền dưới', type: 'color' },
+          { key: 'dashed', label: 'Nét đứt (dashed)', type: 'boolean' },
+          { key: 'label', label: 'Nhãn tuyến đường', type: 'text' },
+          { key: 'fitCamera', label: 'Tự khớp camera (fitCamera)', type: 'boolean' }
+        ],
+        generateCode: (p) => `import { ShareMapLibre, AddRoute } from 'sharemap-maplib-reactjs';
+
+export default function RouteExample() {
+  const waypoints = ${JSON.stringify(DEMO_ROUTE, null, 2)};
+
+  return (
+    <ShareMapLibre center={[106.660172, 10.762622]} zoom={13}>
+      <AddRoute
+        id="delivery-route-01"
+        points={waypoints}
+        color="${p.color}"
+        width={${p.width}}
+        borderColor="${p.borderColor}"
+        borderWidth={${Number(p.width) + 4}}
+        label="${p.label}"
+        dashed={${p.dashed}}
+        fitCamera={${p.fitCamera}}
+      />
+    </ShareMapLibre>
+  );
+}`,
+        propsDoc: [
+          { name: 'id', type: 'string', required: true, desc: 'Định danh duy nhất của tuyến đường.' },
+          { name: 'points', type: '[number, number][]', required: true, desc: 'Mảng tọa độ [[lng, lat], ...].' },
+          { name: 'color', type: 'string', required: false, desc: 'Màu của đường chính (mặc định #3B82F6).' },
+          { name: 'width', type: 'number', required: false, desc: 'Độ rộng của đường (pixels).' },
+          { name: 'borderColor', type: 'string', required: false, desc: 'Màu đường viền dưới (tạo hiệu ứng nổi 3D).' },
+          { name: 'dashed', type: 'boolean', required: false, desc: 'Hiển thị dạng nét đứt.' },
+          { name: 'label', type: 'string', required: false, desc: 'Nhãn chữ chạy dọc theo đường.' },
+          { name: 'fitCamera', type: 'boolean', required: false, desc: 'Tự động fitBounds camera bao trọn tuyến đường.' }
+        ],
+        notes: 'AddRoute tự động dựng 2 layer GPU (viền dưới và nét chính trên), đảm bảo đường sắc nét và không nhấp nháy.'
+      },
+      {
+        id: 'add-polygon',
+        title: 'AddPolygon',
+        group: 'Map Content',
+        badge: 'Component',
+        desc: 'Vẽ vùng đa giác 2D, khu vực địa lý hoặc hàng rào ảo (Geofencing).',
+        defaults: {
+          lng: 106.660000,
+          lat: 10.762000,
+          zoom: 14,
+          fillColor: '#0ea5e9',
+          fillOpacity: 0.35,
+          strokeColor: '#0369a1',
+          strokeWidth: 3,
+          label: 'Khu vực quản lý Đông Đô'
+        },
+        controls: [
+          { key: 'fillColor', label: 'Màu nền (fillColor)', type: 'color' },
+          { key: 'fillOpacity', label: 'Độ trong suốt (fillOpacity)', type: 'range', min: 0.1, max: 1, step: 0.05 },
+          { key: 'strokeColor', label: 'Màu viền (strokeColor)', type: 'color' },
+          { key: 'strokeWidth', label: 'Độ dày viền', type: 'range', min: 1, max: 10 },
+          { key: 'label', label: 'Nhãn khu vực', type: 'text' }
+        ],
+        generateCode: (p) => `import { ShareMapLibre, AddPolygon } from 'sharemap-maplib-reactjs';
+
+export default function PolygonExample() {
+  const zoneCoords = ${JSON.stringify(DEMO_POLYGON, null, 2)};
+
+  return (
+    <ShareMapLibre center={[106.660000, 10.762000]} zoom={14}>
+      <AddPolygon
+        id="zone-district-10"
+        points={zoneCoords}
+        fillColor="${p.fillColor}"
+        fillOpacity={${p.fillOpacity}}
+        strokeColor="${p.strokeColor}"
+        strokeWidth={${p.strokeWidth}}
+        label="${p.label}"
+      />
+    </ShareMapLibre>
+  );
+}`,
+        propsDoc: [
+          { name: 'id', type: 'string', required: true, desc: 'Định danh duy nhất của vùng.' },
+          { name: 'points', type: '[number, number][]', required: true, desc: 'Mảng tọa độ khép kín của polygon.' },
+          { name: 'fillColor', type: 'string', required: false, desc: 'Màu tô bên trong vùng.' },
+          { name: 'fillOpacity', type: 'number', required: false, desc: 'Độ mờ đục từ 0.0 đến 1.0.' },
+          { name: 'strokeColor', type: 'string', required: false, desc: 'Màu đường bao viền.' },
+          { name: 'strokeWidth', type: 'number', required: false, desc: 'Độ dày viền (px).' }
+        ],
+        notes: 'Chỉ dùng cho đa giác phẳng 2D. Muốn dựng khối toà nhà 3D có chiều cao, hãy dùng <AddBuildings>.'
+      },
+      {
+        id: 'add-buildings',
+        title: 'AddBuildings',
+        group: 'Map Content',
+        badge: 'Component',
+        desc: 'Dựng khối nhà 3D (3D Extrusion) từ footprint polygon với chiều cao thực tế.',
+        defaults: {
+          lng: 106.666500,
+          lat: 10.766500,
+          zoom: 15,
+          pitch: 50,
+          height: 90,
+          color: '#38bdf8'
+        },
+        controls: [
+          { key: 'height', label: 'Chiều cao mét (height)', type: 'range', min: 10, max: 200, step: 5 },
+          { key: 'pitch', label: 'Nghiêng camera (pitch)', type: 'range', min: 0, max: 60, step: 5 },
+          { key: 'color', label: 'Màu khối toà nhà', type: 'color' }
+        ],
+        generateCode: (p) => `import { ShareMapLibre, AddBuildings } from 'sharemap-maplib-reactjs';
+
+export default function BuildingsExample() {
+  return (
+    <ShareMapLibre center={[106.666500, 10.766500]} zoom={15} pitch={${p.pitch}}>
+      <AddBuildings
+        id="tower-landmark"
+        buildings={[
+          {
+            footprint: ${JSON.stringify(DEMO_BUILDING_FOOTPRINT)},
+            height: ${p.height},
+            color: '${p.color}'
+          }
+        ]}
+        verticalGradient={true}
+      />
+    </ShareMapLibre>
+  );
+}`,
+        propsDoc: [
+          { name: 'id', type: 'string', required: true, desc: 'Định danh của layer khối nhà.' },
+          { name: 'buildings', type: 'BuildingFeatureDto[]', required: true, desc: 'Mảng các toà nhà với footprint polygon và chiều cao height (mét).' },
+          { name: 'verticalGradient', type: 'boolean', required: false, desc: 'Bật đổ bóng dốc gradient theo phương thẳng đứng.' }
+        ],
+        notes: 'Nên kết hợp với camera pitch (30 - 60 độ) để người dùng thấy rõ phối cảnh 3D.'
+      },
+      {
+        id: 'add-terrain',
+        title: 'AddTerrain',
+        group: 'Map Content',
+        badge: 'Component',
+        desc: 'Bật hiển thị địa hình 3D (DEM elevation) với hệ số phóng đại độ dốc núi.',
+        defaults: {
+          lng: 106.660172,
+          lat: 10.762622,
+          zoom: 12,
+          exaggeration: 1.5
+        },
+        controls: [
+          { key: 'exaggeration', label: 'Hệ số phóng đại (exaggeration)', type: 'range', min: 0, max: 3, step: 0.1 }
+        ],
+        generateCode: (p) => `import { ShareMapLibre, AddTerrain } from 'sharemap-maplib-reactjs';
+
+export default function TerrainExample() {
+  return (
+    <ShareMapLibre
+      center={[106.660172, 10.762622]}
+      zoom={12}
+      engineOptions={{
+        terrainSource: {
+          id: 'ai-terrain-dem',
+          url: 'https://tiles.sharemap.live/dem.json',
+          maxExaggeration: 2
+        }
+      }}
+    >
+      <AddTerrain exaggeration={${p.exaggeration}} />
+    </ShareMapLibre>
+  );
+}`,
+        propsDoc: [
+          { name: 'exaggeration', type: 'number', required: false, desc: 'Hệ số độ cao địa hình. Bị giới hạn bởi maxExaggeration.' }
+        ],
+        notes: 'Nguồn DEM được cấu hình tại engineOptions của ShareMapLibre nhằm bảo mật dữ liệu địa lý.'
+      },
+      {
+        id: 'add-animated-marker',
+        title: 'AddAnimatedMarker',
+        group: 'Map Content',
+        badge: 'Component',
+        desc: 'Marker xe/người chuyển động mượt mà dọc theo lộ trình thời gian thực.',
+        defaults: {
+          lng: 106.660172,
+          lat: 10.762622,
+          zoom: 14,
+          speedKmh: 45,
+          isStationary: false,
+          emoji: '🚚'
+        },
+        controls: [
+          { key: 'speedKmh', label: 'Tốc độ xe (km/h)', type: 'range', min: 5, max: 100, step: 5 },
+          { key: 'isStationary', label: 'Tạm dừng (isStationary)', type: 'boolean' },
+          { key: 'emoji', label: 'Icon xe', type: 'select', options: ['🚚', '🚗', '🛵', '🚶'] }
+        ],
+        generateCode: (p) => `import { ShareMapLibre, AddAnimatedMarker, AddRoute } from 'sharemap-maplib-reactjs';
+
+export default function AnimatedMarkerExample() {
+  const path = ${JSON.stringify(DEMO_ROUTE)};
+
+  return (
+    <ShareMapLibre center={[106.660172, 10.762622]} zoom={14}>
+      <AddRoute id="truck-route" points={path} color="#94a3b8" width={4} />
+      <AddAnimatedMarker
+        id="truck-vehicle-01"
+        lat={path[0][1]}
+        lng={path[0][0]}
+        path={path}
+        speedKmh={${p.speedKmh}}
+        isStationary={${p.isStationary}}
+        icon={{ emoji: '${p.emoji}', framed: true }}
+      />
+    </ShareMapLibre>
+  );
+}`,
+        propsDoc: [
+          { name: 'id', type: 'string', required: true, desc: 'Mã định danh duy nhất của xe.' },
+          { name: 'path', type: '[number, number][]', required: true, desc: 'Tuyến đường tọa độ xe sẽ đi qua.' },
+          { name: 'speedKmh', type: 'number', required: false, desc: 'Tốc độ trung bình (km/h) để tính toán thời gian chạy.' },
+          { name: 'isStationary', type: 'boolean', required: false, desc: 'Dừng xe tại vị trí hiện tại (Play/Pause).' },
+          { name: 'icon', type: 'object', required: false, desc: 'Cấu hình icon: emoji hoặc iconUrl, framed viền tròn.' }
+        ],
+        notes: 'Vòng lặp animation chạy trong Engine bằng requestAnimationFrame độc lập với chu kỳ re-render của React.'
+      },
+      {
+        id: 'add-trajectory-player',
+        title: 'AddTrajectoryPlayer',
+        group: 'Map Content',
+        badge: 'Component',
+        desc: 'Phát lại lịch sử di chuyển GPS trong quá khứ với mốc thời gian thực.',
+        defaults: {
+          lng: 106.660172,
+          lat: 10.762622,
+          zoom: 14,
+          lineColor: '#10b981'
+        },
+        controls: [
+          { key: 'lineColor', label: 'Màu tuyến lịch sử', type: 'color' }
+        ],
+        generateCode: (p) => `import React, { useRef } from 'react';
+import { ShareMapLibre, AddTrajectoryPlayer, type TrajectoryController } from 'sharemap-maplib-reactjs';
+
+export default function TrajectoryReplayExample() {
+  const playerRef = useRef<TrajectoryController>(null);
+  const coords = ${JSON.stringify(DEMO_ROUTE)};
+  const timestamps = [1700000000000, 1700000060000, 1700000120000, 1700000180000];
+
+  return (
+    <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+      <ShareMapLibre center={[106.660172, 10.762622]} zoom={14}>
+        <AddTrajectoryPlayer
+          ref={playerRef}
+          entityId="trip-trip-01"
+          coordinates={coords}
+          timestamps={timestamps}
+          lineColor="${p.lineColor}"
+          icon={{ emoji: '🚗' }}
+        />
+      </ShareMapLibre>
+      <div style={{ position: 'absolute', bottom: 20, left: 20, zIndex: 10, display: 'flex', gap: 8 }}>
+        <button onClick={() => playerRef.current?.play()}>Play</button>
+        <button onClick={() => playerRef.current?.pause()}>Pause</button>
+        <button onClick={() => playerRef.current?.setSpeed(2)}>Speed 2x</button>
+      </div>
+    </div>
+  );
+}`,
+        propsDoc: [
+          { name: 'entityId', type: 'string', required: true, desc: 'Mã định danh của hành trình.' },
+          { name: 'coordinates', type: '[number, number][]', required: true, desc: 'Mảng tọa độ các điểm đã đi qua.' },
+          { name: 'timestamps', type: 'number[]', required: true, desc: 'Mảng thời gian (epoch ms) tương ứng từng điểm.' },
+          { name: 'lineColor', type: 'string', required: false, desc: 'Màu đường nét lịch sử.' },
+          { name: 'ref', type: 'Ref<TrajectoryController>', required: false, desc: 'Ref điều khiển play, pause, seek, setSpeed.' }
+        ],
+        notes: 'Sử dụng ref để điều khiển Play/Pause giúp bấm nút mà không gây re-render component cha.'
+      },
+      {
+        id: 'fly-to',
+        title: 'FlyTo',
+        group: 'Map Content',
+        badge: 'Component',
+        desc: 'Chuyển đổi góc nhìn camera mượt mà hoặc fitBounds một cách declarative.',
+        defaults: {
+          lng: 106.698000,
+          lat: 10.772000,
+          zoom: 16,
+          pitch: 40,
+          bearing: 45
+        },
+        controls: [
+          { key: 'lng', label: 'Kinh độ đích (lng)', type: 'number', step: 0.001 },
+          { key: 'lat', label: 'Vĩ độ đích (lat)', type: 'number', step: 0.001 },
+          { key: 'zoom', label: 'Thu phóng (zoom)', type: 'range', min: 1, max: 20 },
+          { key: 'pitch', label: 'Góc nghiêng (pitch)', type: 'range', min: 0, max: 60 },
+          { key: 'bearing', label: 'Hướng xoay (bearing)', type: 'range', min: 0, max: 360 }
+        ],
+        generateCode: (p) => `import { ShareMapLibre, FlyTo } from 'sharemap-maplib-reactjs';
+
+export default function CameraExample() {
+  return (
+    <ShareMapLibre center={[106.660172, 10.762622]} zoom={13}>
+      <FlyTo
+        center={[${p.lng}, ${p.lat}]}
+        zoom={${p.zoom}}
+        pitch={${p.pitch}}
+        bearing={${p.bearing}}
+        animate={true}
+      />
+    </ShareMapLibre>
+  );
+}`,
+        propsDoc: [
+          { name: 'center', type: '[number, number]', required: false, desc: 'Tọa độ đích bay tới [lng, lat].' },
+          { name: 'zoom', type: 'number', required: false, desc: 'Mức zoom đích.' },
+          { name: 'pitch', type: 'number', required: false, desc: 'Góc nghiêng 3D (0 - 60 độ).' },
+          { name: 'bearing', type: 'number', required: false, desc: 'Góc xoay la bàn (0 - 360 độ).' },
+          { name: 'bounds', type: '[[lng, lat], [lng, lat]]', required: false, desc: 'Khung giới hạn địa lý nếu muốn fitBounds.' }
+        ],
+        notes: 'Khi component FlyTo unmount, camera sẽ giữ nguyên vị trí cuối cùng chứ không bị nhảy ngược lại.'
+      },
+
+      // 3. Controls & Search
+      {
+        id: 'style-picker',
+        title: 'StylePicker',
+        group: 'Controls & Search',
+        badge: 'UI Control',
+        desc: 'Hộp thoại trực quan cho phép người dùng đổi basemap style nhanh chóng.',
+        defaults: {
+          lng: 106.660172,
+          lat: 10.762622,
+          zoom: 13,
+          currentStyle: 'sharemap'
+        },
+        controls: [
+          { key: 'currentStyle', label: 'Style đang chọn', type: 'select', options: ['sharemap', 'sharemap-streets', 'bright', 'dark', 'positron'] }
+        ],
+        generateCode: (p) => `import React, { useState } from 'react';
+import { ShareMapLibre, StylePicker, type StyleAlias } from 'sharemap-maplib-reactjs';
+
+export default function StylePickerExample() {
+  const [style, setStyle] = useState<StyleAlias>('${p.currentStyle}');
+
+  return (
+    <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+      <ShareMapLibre style={style} center={[106.660172, 10.762622]} zoom={13} />
+      <div style={{ position: 'absolute', top: 16, right: 16, zIndex: 10 }}>
+        <StylePicker
+          activeStyle={style}
+          onStyleChange={(newStyle) => setStyle(newStyle)}
+        />
+      </div>
+    </div>
+  );
+}`,
+        propsDoc: [
+          { name: 'activeStyle', type: 'StyleAlias', required: true, desc: 'Style đang được chọn hiện tại.' },
+          { name: 'onStyleChange', type: '(style: StyleAlias) => void', required: true, desc: 'Callback khi người dùng bấm đổi style.' }
+        ],
+        notes: 'Đổi style sẽ nạp lại vector tiles. Các layer của Engine sẽ tự động được phục hồi qua sự kiện styledata.'
+      },
+      {
+        id: 'layer-toggle',
+        title: 'LayerToggle',
+        group: 'Controls & Search',
+        badge: 'Component',
+        desc: 'Bật hoặc tắt trạng thái hiển thị của một layer bất kỳ qua Diff Engine.',
+        defaults: {
+          lng: 106.660172,
+          lat: 10.762622,
+          zoom: 13,
+          visible: true
+        },
+        controls: [
+          { key: 'visible', label: 'Hiển thị layer (visible)', type: 'boolean' }
+        ],
+        generateCode: (p) => `import { ShareMapLibre, AddRoute, LayerToggle } from 'sharemap-maplib-reactjs';
+
+export default function LayerToggleExample() {
+  return (
+    <ShareMapLibre center={[106.660172, 10.762622]} zoom={13}>
+      <AddRoute id="route-toggle-demo" points={${JSON.stringify(DEMO_ROUTE)}} color="#10b981" />
+      <LayerToggle
+        layerId="ai-route-toggle-demo-line"
+        visible={${p.visible}}
+      />
+    </ShareMapLibre>
+  );
+}`,
+        propsDoc: [
+          { name: 'layerId', type: 'string', required: true, desc: 'Mã định danh của layer cần ẩn/hiện.' },
+          { name: 'visible', type: 'boolean', required: true, desc: 'true = visible, false = none.' }
+        ],
+        notes: 'Thực thi qua Diff Engine; nếu trạng thái không đổi sẽ tự động bỏ qua, không gây re-render MapLibre.'
+      },
+      {
+        id: 'map-place-search',
+        title: 'MapPlaceSearch',
+        group: 'Controls & Search',
+        badge: 'UI Control',
+        desc: 'Thanh tìm kiếm địa điểm có dropdown gợi ý tự động (autocomplete).',
+        defaults: {
+          lng: 106.660172,
+          lat: 10.762622,
+          zoom: 13,
+          placeholder: 'Tìm kiếm địa chỉ, nhà hàng, khách sạn...'
+        },
+        controls: [
+          { key: 'placeholder', label: 'Gợi ý tìm kiếm (placeholder)', type: 'text' }
+        ],
+        generateCode: (p) => `import { ShareMapLibre, MapPlaceSearch, type PlaceItem } from 'sharemap-maplib-reactjs';
+
+export default function PlaceSearchExample() {
+  const handleSelectPlace = (place: PlaceItem) => {
+    console.log('Đã chọn địa điểm:', place.name, place.lat, place.lng);
+  };
+
+  return (
+    <ShareMapLibre center={[106.660172, 10.762622]} zoom={13}>
+      <MapPlaceSearch
+        placeholder="${p.placeholder}"
+        onPlaceSelect={handleSelectPlace}
+      />
+    </ShareMapLibre>
+  );
+}`,
+        propsDoc: [
+          { name: 'onPlaceSelect', type: '(place: PlaceItem) => void', required: true, desc: 'Callback khi người dùng chọn kết quả tìm kiếm.' },
+          { name: 'placeholder', type: 'string', required: false, desc: 'Văn bản placeholder ô nhập.' }
+        ],
+        notes: 'Sử dụng API Geomesh để tìm kiếm địa điểm và gợi ý địa danh hành chính Việt Nam chính xác.'
+      },
+
+      // 4. Vehicle Tracking
+      {
+        id: 'vehicle-tracking-map',
+        title: 'VehicleTrackingMap',
+        group: 'Vehicle Tracking',
+        badge: 'Tracking',
+        desc: 'Bản đồ giám sát đội xe đóng gói trọn gói tích hợp sẵn các lớp tracking.',
+        defaults: {
+          lng: 106.660172,
+          lat: 10.762622,
+          zoom: 13
+        },
+        controls: [
+          { key: 'lng', label: 'Kinh độ tâm', type: 'number', step: 0.001 },
+          { key: 'lat', label: 'Vĩ độ tâm', type: 'number', step: 0.001 },
+          { key: 'zoom', label: 'Zoom', type: 'range', min: 1, max: 20 }
+        ],
+        generateCode: (p) => `import { VehicleTrackingMap } from 'sharemap-maplib-reactjs';
+
+export default function FleetMapExample() {
+  const vehicles = [
+    {
+      id: 'truck-51a-888',
+      plate: '51A-888.88',
+      lng: 106.66735,
+      lat: 10.76912,
+      bearing: 45,
+      iconUrl: 'https://cdn-icons-png.flaticon.com/512/743/743922.png',
+      driver: 'Nguyễn Văn A',
+      speedKmh: 42
+    }
+  ];
+
+  return (
+    <VehicleTrackingMap
+      center={[${p.lng}, ${p.lat}]}
+      zoom={${p.zoom}}
+      vehicles={vehicles}
+      onVehicleClick={(vehicleId) => alert('Click xe: ' + vehicleId)}
+    />
+  );
+}`,
+        propsDoc: [
+          { name: 'vehicles', type: 'TrackingVehicleDto[]', required: true, desc: 'Danh sách các xe đang chạy thời gian thực.' },
+          { name: 'plannedRoute', type: 'PlannedRouteDto', required: false, desc: 'Tuyến đường giao hàng dự kiến.' },
+          { name: 'onVehicleClick', type: '(id: string) => void', required: false, desc: 'Callback khi bấm vào xe trên bản đồ.' }
+        ],
+        notes: 'Đóng gói sẵn ShareMapLibre + VehicleTrackingEngineLayers + StylePicker tiện dùng nhanh.'
+      },
+      {
+        id: 'vehicle-detail-popup',
+        title: 'VehicleDetailPopup',
+        group: 'Vehicle Tracking',
+        badge: 'Tracking UI',
+        desc: 'Bảng thông tin xe độc lập framework, định vị qua MapOverlay.',
+        defaults: {
+          lng: 106.660172,
+          lat: 10.762622,
+          zoom: 13,
+          plate: '51A-888.88',
+          driver: 'Nguyễn Văn A',
+          speed: '48 km/h'
+        },
+        controls: [
+          { key: 'plate', label: 'Biển số xe', type: 'text' },
+          { key: 'driver', label: 'Tài xế', type: 'text' },
+          { key: 'speed', label: 'Tốc độ hiện tại', type: 'text' }
+        ],
+        generateCode: (p) => `import { ShareMapLibre, VehicleDetailPopup, MapOverlay } from 'sharemap-maplib-reactjs';
+
+export default function VehiclePopupExample() {
+  return (
+    <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+      <ShareMapLibre center={[106.660172, 10.762622]} zoom={13} />
+      <MapOverlay placement="top-right">
+        <VehicleDetailPopup
+          vehicleId="v-01"
+          title="Xe tải đông lạnh 5 tấn"
+          ownership="internal"
+          gpsTimeLabel="14:30 Hôm nay"
+          fields={[
+            { label: 'Biển số', value: '${p.plate}' },
+            { label: 'Tài xế', value: '${p.driver}' },
+            { label: 'Tốc độ', value: '${p.speed}' },
+          ]}
+          onClose={() => console.log('Đóng popup')}
+        />
+      </MapOverlay>
+    </div>
+  );
+}`,
+        propsDoc: [
+          { name: 'title', type: 'string', required: true, desc: 'Tiêu đề thẻ thông tin xe.' },
+          { name: 'fields', type: 'VehicleDetailField[]', required: true, desc: 'Danh sách các trường nhãn/giá trị.' },
+          { name: 'onClose', type: '() => void', required: false, desc: 'Sự kiện đóng thẻ popup.' }
+        ],
+        notes: 'Popup không tự set position: absolute. Bắt buộc bọc bằng <MapOverlay> để định vị góc.'
+      },
+      {
+        id: 'planned-drop-points-bar',
+        title: 'PlannedDropPointsBar',
+        group: 'Vehicle Tracking',
+        badge: 'Tracking UI',
+        desc: 'Thanh tiến trình timeline các điểm giao hàng trên tuyến kế hoạch.',
+        defaults: {
+          lng: 106.660172,
+          lat: 10.762622,
+          zoom: 13,
+          planName: 'Chuyến giao quận 10 - Tân Bình'
+        },
+        controls: [
+          { key: 'planName', label: 'Tên chuyến giao', type: 'text' }
+        ],
+        generateCode: (p) => `import { ShareMapLibre, PlannedDropPointsBar, MapOverlay } from 'sharemap-maplib-reactjs';
+
+export default function DropPointsBarExample() {
+  const dropPoints = [
+    { id: 'dp-1', label: 'Điểm nhận hàng A', isCompleted: true },
+    { id: 'dp-2', label: 'Điểm giao 1 - Trần Hưng Đạo', isCompleted: false },
+    { id: 'dp-3', label: 'Điểm giao 2 - Lý Thường Kiệt', isCompleted: false }
+  ];
+
+  return (
+    <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+      <ShareMapLibre center={[106.660172, 10.762622]} zoom={13} />
+      <MapOverlay placement="bottom-center">
+        <PlannedDropPointsBar
+          planName="${p.planName}"
+          dropPoints={dropPoints}
+          activeDropPointIndex={1}
+          onDropPointClick={(idx) => console.log('Bấm điểm:', idx)}
+        />
+      </MapOverlay>
+    </div>
+  );
+}`,
+        propsDoc: [
+          { name: 'planName', type: 'string', required: false, desc: 'Tên kế hoạch chuyến giao hàng.' },
+          { name: 'dropPoints', type: 'PlannedDropPointViewModel[]', required: true, desc: 'Danh sách các điểm dừng.' },
+          { name: 'activeDropPointIndex', type: 'number', required: false, desc: 'Vị trí điểm đang được chọn.' }
+        ],
+        notes: 'Cung cấp kèm các hàm tính toán getPlannedProgressPercent() và formatTrackingDistance().'
+      },
+
+      // 5. Compatibility & Legacy
+      {
+        id: 'route-line',
+        title: 'RouteLine',
+        group: 'Legacy',
+        badge: 'Legacy',
+        desc: 'Component vẽ tuyến đường cũ (trực tiếp qua MapLibre). Khuyến nghị đổi sang <AddRoute>.',
+        defaults: {
+          lng: 106.660172,
+          lat: 10.762622,
+          zoom: 13,
+          color: '#ef4444'
+        },
+        controls: [
+          { key: 'color', label: 'Màu tuyến', type: 'color' }
+        ],
+        generateCode: (p) => `import { ShareMapLibre, RouteLine } from 'sharemap-maplib-reactjs';
+
+/**
+ * ⚠️ Khuyến nghị: Thay thế bằng <AddRoute> để được hưởng lợi từ
+ * Diff Engine và tự động phục hồi khi đổi basemap style.
+ */
+export default function LegacyRouteExample() {
+  return (
+    <ShareMapLibre center={[106.660172, 10.762622]} zoom={13}>
+      <RouteLine
+        id="legacy-route"
+        points={${JSON.stringify(DEMO_ROUTE)}}
+        color="${p.color}"
+        width={6}
+      />
+    </ShareMapLibre>
+  );
+}`,
+        propsDoc: [
+          { name: 'id', type: 'string', required: true, desc: 'Mã định danh tuyến.' },
+          { name: 'points', type: '[number, number][]', required: true, desc: 'Mảng tọa độ [[lng, lat], ...].' }
+        ],
+        notes: 'Legacy API: gọi map.addSource trực tiếp mà không qua Engine diff.'
+      }
+    ];
+
+    /* ─── State Management ──────────────────────────────────────────────── */
+    let activeComponentId = 'add-marker';
+    let currentProps = {};
+    let isUserTypingCode = false;
+    let autoRunTimer = null;
+    let mapInstance = null;
+
+    // Overlay layers tracking on MapLibre
+    let activeLayerIds = [];
+    let activeSourceIds = [];
+    let activeMarkers = [];
+    let activeAnimationId = null;
+
+    /* ─── ShareMap Official Vector Tile Styles ───────────────────────────── */
+    const SHAREMAP_STYLES = {
+      sharemap: 'https://tiles.sharemap.live/tiles/styles/sharemap.json',
+      default: 'https://tiles.sharemap.live/tiles/styles/sharemap.json',
+      'sharemap-streets': 'https://tiles.sharemap.live/tiles/styles/sharemap-streets.json',
+      bright: 'https://tiles.sharemap.live/tiles/styles/bright.json',
+      dark: 'https://tiles.sharemap.live/tiles/styles/dark.json',
+      positron: 'https://tiles.sharemap.live/tiles/styles/positron.json'
+    };
+
+    let currentMapStyleUrl = SHAREMAP_STYLES.sharemap;
+
+    function resolveShareMapStyle(styleAliasOrUrl) {
+      if (!styleAliasOrUrl) return SHAREMAP_STYLES.sharemap;
+      if (typeof styleAliasOrUrl === 'object') return styleAliasOrUrl;
+      return SHAREMAP_STYLES[styleAliasOrUrl] || styleAliasOrUrl;
+    }
+
+    /* ─── Initialize MapLibre Preview Canvas With ShareMap Vector Map ────── */
+    function initMapLibre() {
+      const mapElem = document.getElementById('liveMapElement');
+      if (!mapElem) return;
+
+      if (typeof maplibregl === 'undefined') {
+        showError('Không thể tải MapLibre GL JS SDK. Vui lòng kiểm tra kết nối mạng.');
+        return;
+      }
+
+      try {
+        currentMapStyleUrl = resolveShareMapStyle(currentProps.style || currentProps.currentStyle || 'sharemap');
+
+        mapInstance = new maplibregl.Map({
+          container: 'liveMapElement',
+          style: currentMapStyleUrl,
+          center: DEMO_CENTER,
+          zoom: DEMO_ZOOM,
+          pitch: 0,
+          bearing: 0
+        });
+
+        mapInstance.addControl(new maplibregl.NavigationControl(), 'top-left');
+
+        mapInstance.on('load', () => {
+          setStatus('ready', 'Ready');
+          renderCurrentDemoOnMap();
+        });
+
+        mapInstance.on('error', (e) => {
+          if (e && e.error && e.error.message) {
+            console.warn('ShareMap Vector Tile Warning:', e.error.message);
+          }
+        });
+
+        mapInstance.on('move', () => {
+          const center = mapInstance.getCenter();
+          const zoom = mapInstance.getZoom().toFixed(1);
+          document.getElementById('mapCoordinateDisplay').innerText = 
+            `[${center.lng.toFixed(6)}, ${center.lat.toFixed(6)}] · Zoom ${zoom}`;
+        });
+      } catch (err) {
+        showError('Lỗi khởi tạo bản đồ ShareMap: ' + err.message);
+      }
+    }
+
+    /* ─── Clear All Previous Dynamic Layers & Markers on Map ─────────────── */
+    function clearDynamicMapObjects() {
+      if (activeAnimationId) {
+        cancelAnimationFrame(activeAnimationId);
+        activeAnimationId = null;
+      }
+
+      // Remove floating style picker overlay if present
+      const overlay = document.getElementById('demo-style-picker-overlay');
+      if (overlay) overlay.remove();
+
+      // Remove DOM markers
+      activeMarkers.forEach(m => m.remove());
+      activeMarkers = [];
+
+      // Remove map layers
+      if (mapInstance && mapInstance.isStyleLoaded()) {
+        activeLayerIds.forEach(id => {
+          if (mapInstance.getLayer(id)) mapInstance.removeLayer(id);
+        });
+        activeSourceIds.forEach(id => {
+          if (mapInstance.getSource(id)) mapInstance.removeSource(id);
+        });
+      }
+      activeLayerIds = [];
+      activeSourceIds = [];
+    }
+
+    /* ─── Render Active Demo on MapLibre Canvas ───────────────────────────── */
+    function renderCurrentDemoOnMap() {
+      if (!mapInstance) return;
+
+      const demo = COMPONENT_DEMOS.find(d => d.id === activeComponentId);
+      if (!demo) return;
+
+      const p = currentProps;
+
+      // Handle dynamic style switching if requested by demo or props
+      const requestedStyleKey = (demo.id === 'sharemap-libre' && p.style) ? p.style
+                              : (demo.id === 'style-picker' && p.currentStyle) ? p.currentStyle
+                              : null;
+
+      if (requestedStyleKey) {
+        const targetStyleUrl = resolveShareMapStyle(requestedStyleKey);
+        if (targetStyleUrl !== currentMapStyleUrl) {
+          currentMapStyleUrl = targetStyleUrl;
+          clearDynamicMapObjects();
+          setStatus('busy', 'Đang tải style ShareMap...');
+          mapInstance.setStyle(targetStyleUrl);
+          const onStyleReady = () => {
+            if (mapInstance.isStyleLoaded()) {
+              mapInstance.off('styledata', onStyleReady);
+              setStatus('ready', 'Ready');
+              renderCurrentDemoOnMap();
+            }
+          };
+          mapInstance.on('styledata', onStyleReady);
+          return;
+        }
+      }
+
+      if (!mapInstance.isStyleLoaded()) {
+        mapInstance.once('styledata', () => renderCurrentDemoOnMap());
+        return;
+      }
+
+      clearDynamicMapObjects();
+      clearError();
+      setStatus('busy', 'Rendering');
+
+      try {
+        // Adjust camera center & zoom
+        const lng = Number(p.lng ?? DEMO_CENTER[0]);
+        const lat = Number(p.lat ?? DEMO_CENTER[1]);
+        const zoom = Number(p.zoom ?? DEMO_ZOOM);
+        const pitch = Number(p.pitch ?? 0);
+        const bearing = Number(p.bearing ?? 0);
+
+        mapInstance.jumpTo({ center: [lng, lat], zoom, pitch, bearing });
+
+        // 1. AddMarker demo
+        if (demo.id === 'add-marker') {
+          const el = document.createElement('div');
+          el.style.display = 'flex';
+          el.style.flexDirection = 'column';
+          el.style.alignItems = 'center';
+          el.style.cursor = 'pointer';
+
+          const pin = document.createElement('div');
+          pin.style.width = '36px';
+          pin.style.height = '36px';
+          pin.style.borderRadius = '50%';
+          pin.style.background = p.color || '#ef4444';
+          pin.style.border = '3px solid #ffffff';
+          pin.style.boxShadow = '0 3px 8px rgba(0,0,0,0.3)';
+          pin.style.display = 'flex';
+          pin.style.alignItems = 'center';
+          pin.style.justifyContent = 'center';
+          pin.style.fontSize = '18px';
+          pin.innerText = p.emoji || '📍';
+
+          const label = document.createElement('div');
+          label.style.background = 'rgba(15, 23, 42, 0.85)';
+          label.style.color = '#ffffff';
+          label.style.padding = '2px 8px';
+          label.style.borderRadius = '4px';
+          label.style.fontSize = '12px';
+          label.style.fontWeight = '600';
+          label.style.marginTop = '4px';
+          label.style.whiteSpace = 'nowrap';
+          label.innerText = p.label || 'Tọa độ';
+
+          el.appendChild(pin);
+          if (p.label) el.appendChild(label);
+
+          const popup = new maplibregl.Popup({ offset: 25 }).setText(p.label || 'Vị trí đã đánh dấu');
+          const marker = new maplibregl.Marker({ element: el })
+            .setLngLat([lng, lat])
+            .setPopup(popup)
+            .addTo(mapInstance);
+
+          activeMarkers.push(marker);
+        }
+
+        // 2. AddRoute demo
+        else if (demo.id === 'add-route' || demo.id === 'route-line') {
+          const sourceId = 'src-demo-route';
+          const lineId = 'layer-demo-route';
+          const borderId = 'layer-demo-route-border';
+
+          mapInstance.addSource(sourceId, {
+            type: 'geojson',
+            data: {
+              type: 'Feature',
+              geometry: { type: 'LineString', coordinates: DEMO_ROUTE }
+            }
+          });
+          activeSourceIds.push(sourceId);
+
+          // Border layer
+          mapInstance.addLayer({
+            id: borderId,
+            type: 'line',
+            source: sourceId,
+            layout: { 'line-cap': 'round', 'line-join': 'round' },
+            paint: {
+              'line-color': p.borderColor || '#1e3a8a',
+              'line-width': (Number(p.width) || 8) + 4
+            }
+          });
+          activeLayerIds.push(borderId);
+
+          // Main line layer
+          const linePaint = {
+            'line-color': p.color || '#3b82f6',
+            'line-width': Number(p.width) || 8
+          };
+          if (p.dashed) linePaint['line-dasharray'] = [2, 1.5];
+
+          mapInstance.addLayer({
+            id: lineId,
+            type: 'line',
+            source: sourceId,
+            layout: { 'line-cap': 'round', 'line-join': 'round' },
+            paint: linePaint
+          });
+          activeLayerIds.push(lineId);
+
+          if (p.fitCamera) {
+            const bounds = new maplibregl.LngLatBounds();
+            DEMO_ROUTE.forEach(pt => bounds.extend(pt));
+            mapInstance.fitBounds(bounds, { padding: 60, maxZoom: 16 });
+          }
+        }
+
+        // 3. AddPolygon demo
+        else if (demo.id === 'add-polygon') {
+          const sourceId = 'src-demo-polygon';
+          const fillId = 'layer-demo-polygon-fill';
+          const lineId = 'layer-demo-polygon-stroke';
+
+          mapInstance.addSource(sourceId, {
+            type: 'geojson',
+            data: {
+              type: 'Feature',
+              geometry: { type: 'Polygon', coordinates: [DEMO_POLYGON] }
+            }
+          });
+          activeSourceIds.push(sourceId);
+
+          mapInstance.addLayer({
+            id: fillId,
+            type: 'fill',
+            source: sourceId,
+            paint: {
+              'fill-color': p.fillColor || '#0ea5e9',
+              'fill-opacity': Number(p.fillOpacity) ?? 0.35
+            }
+          });
+          activeLayerIds.push(fillId);
+
+          mapInstance.addLayer({
+            id: lineId,
+            type: 'line',
+            source: sourceId,
+            paint: {
+              'line-color': p.strokeColor || '#0369a1',
+              'line-width': Number(p.strokeWidth) || 3
+            }
+          });
+          activeLayerIds.push(lineId);
+        }
+
+        // 4. AddBuildings demo (3D Extrusion)
+        else if (demo.id === 'add-buildings') {
+          const sourceId = 'src-demo-buildings';
+          const layerId = 'layer-demo-buildings-extrusion';
+
+          mapInstance.addSource(sourceId, {
+            type: 'geojson',
+            data: {
+              type: 'Feature',
+              geometry: { type: 'Polygon', coordinates: [DEMO_BUILDING_FOOTPRINT] }
+            }
+          });
+          activeSourceIds.push(sourceId);
+
+          mapInstance.addLayer({
+            id: layerId,
+            type: 'fill-extrusion',
+            source: sourceId,
+            paint: {
+              'fill-extrusion-color': p.color || '#38bdf8',
+              'fill-extrusion-height': Number(p.height) || 90,
+              'fill-extrusion-base': 0,
+              'fill-extrusion-opacity': 0.9
+            }
+          });
+          activeLayerIds.push(layerId);
+        }
+
+        // 5. AddAnimatedMarker demo
+        else if (demo.id === 'add-animated-marker') {
+          // Draw path background
+          const routeSource = 'src-anim-path';
+          mapInstance.addSource(routeSource, {
+            type: 'geojson',
+            data: { type: 'Feature', geometry: { type: 'LineString', coordinates: DEMO_ROUTE } }
+          });
+          activeSourceIds.push(routeSource);
+
+          mapInstance.addLayer({
+            id: 'layer-anim-path',
+            type: 'line',
+            source: routeSource,
+            paint: { 'line-color': '#94a3b8', 'line-width': 4, 'line-dasharray': [2, 2] }
+          });
+          activeLayerIds.push('layer-anim-path');
+
+          // Animate marker along DEMO_ROUTE
+          const el = document.createElement('div');
+          el.style.width = '38px';
+          el.style.height = '38px';
+          el.style.borderRadius = '50%';
+          el.style.background = '#0f172a';
+          el.style.border = '2px solid #38bdf8';
+          el.style.display = 'flex';
+          el.style.alignItems = 'center';
+          el.style.justifyContent = 'center';
+          el.style.fontSize = '20px';
+          el.style.boxShadow = '0 4px 10px rgba(0,0,0,0.3)';
+          el.innerText = p.emoji || '🚚';
+
+          const animatedMarker = new maplibregl.Marker({ element: el })
+            .setLngLat(DEMO_ROUTE[0])
+            .addTo(mapInstance);
+          activeMarkers.push(animatedMarker);
+
+          if (!p.isStationary) {
+            let progress = 0;
+            const speed = (Number(p.speedKmh) || 45) * 0.00008;
+
+            function animateVehicle() {
+              progress += speed;
+              if (progress > 1) progress = 0;
+
+              // Simple segment interpolation
+              const totalSegments = DEMO_ROUTE.length - 1;
+              const scaled = progress * totalSegments;
+              const segIdx = Math.floor(scaled);
+              const t = scaled - segIdx;
+
+              const p1 = DEMO_ROUTE[segIdx];
+              const p2 = DEMO_ROUTE[Math.min(segIdx + 1, totalSegments)];
+
+              const curLng = p1[0] + (p2[0] - p1[0]) * t;
+              const curLat = p1[1] + (p2[1] - p1[1]) * t;
+
+              animatedMarker.setLngLat([curLng, curLat]);
+              activeAnimationId = requestAnimationFrame(animateVehicle);
+            }
+            activeAnimationId = requestAnimationFrame(animateVehicle);
+          }
+        }
+
+        // 6. FlyTo demo
+        else if (demo.id === 'fly-to') {
+          mapInstance.flyTo({
+            center: [lng, lat],
+            zoom,
+            pitch,
+            bearing,
+            speed: 1.2
+          });
+        }
+
+        // 7. LayerToggle demo
+        else if (demo.id === 'layer-toggle') {
+          const sourceId = 'src-toggle-demo';
+          const layerId = 'ai-route-toggle-demo-line';
+
+          mapInstance.addSource(sourceId, {
+            type: 'geojson',
+            data: { type: 'Feature', geometry: { type: 'LineString', coordinates: DEMO_ROUTE } }
+          });
+          activeSourceIds.push(sourceId);
+
+          mapInstance.addLayer({
+            id: layerId,
+            type: 'line',
+            source: sourceId,
+            layout: { visibility: p.visible ? 'visible' : 'none' },
+            paint: { 'line-color': '#10b981', 'line-width': 8 }
+          });
+          activeLayerIds.push(layerId);
+        }
+
+        // 8. StylePicker demo
+        else if (demo.id === 'style-picker') {
+          const pickerContainer = document.createElement('div');
+          pickerContainer.id = 'demo-style-picker-overlay';
+          pickerContainer.style.position = 'absolute';
+          pickerContainer.style.top = '14px';
+          pickerContainer.style.right = '14px';
+          pickerContainer.style.background = 'var(--panel-bg, #1e293b)';
+          pickerContainer.style.border = '1px solid var(--border-color, #334155)';
+          pickerContainer.style.borderRadius = '8px';
+          pickerContainer.style.padding = '10px 12px';
+          pickerContainer.style.boxShadow = '0 6px 16px rgba(0,0,0,0.3)';
+          pickerContainer.style.zIndex = '5';
+          pickerContainer.style.display = 'flex';
+          pickerContainer.style.flexDirection = 'column';
+          pickerContainer.style.gap = '6px';
+
+          const title = document.createElement('div');
+          title.style.fontSize = '12px';
+          title.style.fontWeight = '700';
+          title.style.color = 'var(--text-main, #f8fafc)';
+          title.innerText = '🎨 Chọn Bản đồ Nền ShareMap:';
+          pickerContainer.appendChild(title);
+
+          const styles = [
+            { id: 'sharemap', label: 'ShareMap Chuẩn (sharemap.json)' },
+            { id: 'sharemap-streets', label: 'ShareMap Đường phố' },
+            { id: 'bright', label: 'Bright (Sáng)' },
+            { id: 'dark', label: 'Dark (Tối)' },
+            { id: 'positron', label: 'Positron' }
+          ];
+
+          styles.forEach(s => {
+            const btn = document.createElement('button');
+            const isActive = (p.currentStyle || 'sharemap') === s.id;
+            btn.style.padding = '6px 12px';
+            btn.style.fontSize = '12px';
+            btn.style.borderRadius = '4px';
+            btn.style.border = isActive ? '1px solid var(--accent, #38bdf8)' : '1px solid rgba(255,255,255,0.1)';
+            btn.style.background = isActive ? 'var(--accent, #0284c7)' : 'rgba(255,255,255,0.06)';
+            btn.style.color = '#ffffff';
+            btn.style.cursor = 'pointer';
+            btn.style.textAlign = 'left';
+            btn.style.transition = 'all 0.15s ease';
+            btn.innerText = (isActive ? '✓ ' : '   ') + s.label;
+            btn.onclick = () => {
+              p.currentStyle = s.id;
+              const sel = document.querySelector('select[data-key="currentStyle"]');
+              if (sel) sel.value = s.id;
+              handlePropChange();
+            };
+            pickerContainer.appendChild(btn);
+          });
+
+          const mapBox = document.querySelector('.map-container-box');
+          if (mapBox) {
+            mapBox.appendChild(pickerContainer);
+          }
+        }
+
+        setStatus('ready', 'Rendered');
+      } catch (err) {
+        showError('Lỗi thực thi trên bản đồ: ' + err.message);
+        setStatus('error', 'Error');
+      }
+    }
+
+    /* ─── UI Helpers: Status & Error ────────────────────────────────────── */
+    function setStatus(type, label) {
+      const dot = document.getElementById('statusDot');
+      const txt = document.getElementById('statusLabel');
+      dot.className = 'status-dot' + (type === 'ready' ? '' : ' ' + type);
+      txt.innerText = label;
+    }
+
+    function showError(msg) {
+      const banner = document.getElementById('errorBanner');
+      banner.innerText = msg;
+      banner.classList.add('show');
+    }
+
+    function clearError() {
+      const banner = document.getElementById('errorBanner');
+      banner.innerText = '';
+      banner.classList.remove('show');
+    }
+
+    /* ─── Component Selection & Navigation ──────────────────────────────── */
+    function renderSidebarCatalog() {
+      const container = document.getElementById('catalogGroupContainer');
+      container.innerHTML = '';
+
+      // Group components by group name
+      const groups = ['Core Map', 'Map Content', 'Controls & Search', 'Vehicle Tracking', 'Legacy'];
+      const query = document.getElementById('catalogSearchInput').value.toLowerCase().trim();
+
+      groups.forEach(groupName => {
+        const items = COMPONENT_DEMOS.filter(c => {
+          if (c.group !== groupName) return false;
+          if (!query) return true;
+          return c.title.toLowerCase().includes(query) || c.desc.toLowerCase().includes(query);
+        });
+
+        if (items.length === 0) return;
+
+        const groupDiv = document.createElement('div');
+        groupDiv.style.marginBottom = '14px';
+
+        const title = document.createElement('div');
+        title.className = 'component-group-title';
+        title.innerText = groupName;
+        groupDiv.appendChild(title);
+
+        const ul = document.createElement('ul');
+        ul.className = 'component-list';
+
+        items.forEach(c => {
+          const li = document.createElement('li');
+          li.className = 'component-item' + (c.id === activeComponentId ? ' active' : '');
+          li.onclick = () => selectComponent(c.id);
+
+          const nameSpan = document.createElement('span');
+          nameSpan.innerText = c.title;
+          li.appendChild(nameSpan);
+
+          if (c.badge === 'Advanced') {
+            const b = document.createElement('span');
+            b.className = 'tag-badge tag-adv';
+            b.innerText = 'Adv';
+            li.appendChild(b);
+          } else if (c.badge === 'Legacy') {
+            const b = document.createElement('span');
+            b.className = 'tag-badge tag-legacy';
+            b.innerText = 'Old';
+            li.appendChild(b);
+          }
+
+          ul.appendChild(li);
+        });
+
+        groupDiv.appendChild(ul);
+        container.appendChild(groupDiv);
+      });
+    }
+
+    function selectComponent(compId) {
+      activeComponentId = compId;
+      const demo = COMPONENT_DEMOS.find(d => d.id === compId);
+      if (!demo) return;
+
+      // Reset props to defaults
+      currentProps = { ...demo.defaults };
+
+      // Update Header info
+      document.getElementById('currentCompTitle').innerText = demo.title;
+      document.getElementById('currentCompGroup').innerText = demo.group;
+      document.getElementById('currentCompDesc').innerText = demo.desc;
+
+      // Update Controls Form
+      renderQuickControls(demo);
+
+      // Update Props Table & Note
+      renderPropsTable(demo);
+
+      // Generate & set Code in Editor
+      const code = demo.generateCode(currentProps);
+      updateEditorContent(code);
+
+      // Re-render sidebar active highlight
+      renderSidebarCatalog();
+
+      // Render map
+      renderCurrentDemoOnMap();
+
+      // Close mobile drawer if open
+      document.getElementById('sidebarCatalog').classList.remove('open');
+      document.getElementById('sidebarOverlay').classList.remove('open');
+    }
+
+    /* ─── Quick Controls Form Generation ────────────────────────────────── */
+    function renderQuickControls(demo) {
+      const grid = document.getElementById('controlsGrid');
+      grid.innerHTML = '';
+
+      demo.controls.forEach(ctrl => {
+        const item = document.createElement('div');
+        item.className = 'control-item';
+
+        const label = document.createElement('label');
+        label.className = 'control-label';
+        label.innerHTML = `<span>${ctrl.label}</span> <span id="val-${ctrl.key}">${currentProps[ctrl.key] ?? ''}</span>`;
+        item.appendChild(label);
+
+        if (ctrl.type === 'range') {
+          const box = document.createElement('div');
+          box.className = 'control-range-box';
+
+          const input = document.createElement('input');
+          input.type = 'range';
+          input.className = 'control-range';
+          input.min = ctrl.min;
+          input.max = ctrl.max;
+          input.step = ctrl.step || 1;
+          input.value = currentProps[ctrl.key];
+
+          input.oninput = (e) => {
+            currentProps[ctrl.key] = Number(e.target.value);
+            document.getElementById(`val-${ctrl.key}`).innerText = e.target.value;
+            syncFromControlsToCode();
+          };
+
+          box.appendChild(input);
+          item.appendChild(box);
+        } else if (ctrl.type === 'color') {
+          const box = document.createElement('div');
+          box.className = 'control-color-box';
+
+          const input = document.createElement('input');
+          input.type = 'color';
+          input.className = 'control-color';
+          input.value = currentProps[ctrl.key];
+
+          input.onchange = (e) => {
+            currentProps[ctrl.key] = e.target.value;
+            document.getElementById(`val-${ctrl.key}`).innerText = e.target.value;
+            syncFromControlsToCode();
+          };
+
+          box.appendChild(input);
+          item.appendChild(box);
+        } else if (ctrl.type === 'boolean') {
+          const select = document.createElement('select');
+          select.className = 'control-input';
+          select.innerHTML = `
+            <option value="true" ${currentProps[ctrl.key] ? 'selected' : ''}>true (Bật)</option>
+            <option value="false" ${!currentProps[ctrl.key] ? 'selected' : ''}>false (Tắt)</option>
+          `;
+          select.onchange = (e) => {
+            currentProps[ctrl.key] = e.target.value === 'true';
+            document.getElementById(`val-${ctrl.key}`).innerText = currentProps[ctrl.key];
+            syncFromControlsToCode();
+          };
+          item.appendChild(select);
+        } else if (ctrl.type === 'select') {
+          const select = document.createElement('select');
+          select.className = 'control-input';
+          ctrl.options.forEach(opt => {
+            const o = document.createElement('option');
+            o.value = opt;
+            o.innerText = opt;
+            if (opt === currentProps[ctrl.key]) o.selected = true;
+            select.appendChild(o);
+          });
+          select.onchange = (e) => {
+            currentProps[ctrl.key] = e.target.value;
+            document.getElementById(`val-${ctrl.key}`).innerText = e.target.value;
+            syncFromControlsToCode();
+          };
+          item.appendChild(select);
+        } else {
+          const input = document.createElement('input');
+          input.type = ctrl.type || 'text';
+          input.className = 'control-input';
+          if (ctrl.step) input.step = ctrl.step;
+          input.value = currentProps[ctrl.key] ?? '';
+
+          input.oninput = (e) => {
+            currentProps[ctrl.key] = ctrl.type === 'number' ? Number(e.target.value) : e.target.value;
+            document.getElementById(`val-${ctrl.key}`).innerText = e.target.value;
+            syncFromControlsToCode();
+          };
+          item.appendChild(input);
+        }
+
+        grid.appendChild(item);
+      });
+    }
+
+    /* ─── Sync Quick Controls -> Code Editor -> Preview ─────────────────── */
+    function syncFromControlsToCode() {
+      const demo = COMPONENT_DEMOS.find(d => d.id === activeComponentId);
+      if (!demo) return;
+
+      const code = demo.generateCode(currentProps);
+      updateEditorContent(code);
+
+      const autoRun = document.getElementById('chkAutoRun').checked;
+      if (autoRun) {
+        clearTimeout(autoRunTimer);
+        autoRunTimer = setTimeout(() => {
+          renderCurrentDemoOnMap();
+        }, 200);
+      }
+    }
+
+    /* ─── Props Documentation Table Render ──────────────────────────────── */
+    function renderPropsTable(demo) {
+      const tbody = document.getElementById('propsTableBody');
+      tbody.innerHTML = '';
+
+      demo.propsDoc.forEach(p => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><code>${p.name}</code></td>
+          <td><code style="color:var(--text-muted);">${p.type}</code></td>
+          <td>${p.required ? '<span style="color:#ef4444; font-weight:600;">Bắt buộc</span>' : '<span style="color:#10b981;">Tùy chọn</span>'}</td>
+          <td>${p.desc}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('componentNoteBox').innerHTML = `<strong>💡 Ghi chú kỹ thuật:</strong> ${demo.notes}`;
+    }
+
+    /* ─── Code Editor & Line Numbers ────────────────────────────────────── */
+    const codeEditor = document.getElementById('codeEditor');
+    const editorLineNumbers = document.getElementById('editorLineNumbers');
+
+    function updateEditorContent(code) {
+      codeEditor.value = code;
+      updateLineNumbers();
+    }
+
+    function updateLineNumbers() {
+      const lines = codeEditor.value.split('\n').length;
+      editorLineNumbers.innerHTML = Array.from({ length: lines }, (_, i) => i + 1).join('<br>');
+    }
+
+    codeEditor.addEventListener('input', () => {
+      updateLineNumbers();
+      isUserTypingCode = true;
+
+      const autoRun = document.getElementById('chkAutoRun').checked;
+      if (autoRun) {
+        clearTimeout(autoRunTimer);
+        autoRunTimer = setTimeout(() => {
+          parseUserCodeAndUpdateProps();
+          renderCurrentDemoOnMap();
+        }, 600);
+      }
+    });
+
+    // Handle Tab key in textarea
+    codeEditor.addEventListener('keydown', (e) => {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        const start = codeEditor.selectionStart;
+        const end = codeEditor.selectionEnd;
+        codeEditor.value = codeEditor.value.substring(0, start) + '  ' + codeEditor.value.substring(end);
+        codeEditor.selectionStart = codeEditor.selectionEnd = start + 2;
+        updateLineNumbers();
+      }
+    });
+
+    /* ─── Parse User Code -> Update Demo Props (Smart Sync) ─────────────── */
+    function parseUserCodeAndUpdateProps() {
+      const text = codeEditor.value;
+
+      // Extract center=[lng, lat]
+      const centerMatch = text.match(/center=\{\[\s*([-\d.]+)\s*,\s*([-\d.]+)\s*\]\}/);
+      if (centerMatch) {
+        currentProps.lng = Number(centerMatch[1]);
+        currentProps.lat = Number(centerMatch[2]);
+      }
+
+      // Extract zoom={number}
+      const zoomMatch = text.match(/zoom=\{([\d.]+)\}/);
+      if (zoomMatch) currentProps.zoom = Number(zoomMatch[1]);
+
+      // Extract label="text"
+      const labelMatch = text.match(/label="([^"]+)"/);
+      if (labelMatch) currentProps.label = labelMatch[1];
+
+      // Extract color="#hex"
+      const colorMatch = text.match(/color="([^"]+)"/);
+      if (colorMatch) currentProps.color = colorMatch[1];
+
+      // Extract width={number}
+      const widthMatch = text.match(/width=\{([\d.]+)\}/);
+      if (widthMatch) currentProps.width = Number(widthMatch[1]);
+
+      // Extract dashed={boolean}
+      const dashedMatch = text.match(/dashed=\{([^}]+)\}/);
+      if (dashedMatch) currentProps.dashed = dashedMatch[1].trim() === 'true';
+
+      // Extract speedKmh={number}
+      const speedMatch = text.match(/speedKmh=\{([\d.]+)\}/);
+      if (speedMatch) currentProps.speedKmh = Number(speedMatch[1]);
+
+      // Extract height={number}
+      const heightMatch = text.match(/height=\{([\d.]+)\}/);
+      if (heightMatch) currentProps.height = Number(heightMatch[1]);
+    }
+
+    /* ─── Action Buttons: Run, Reset, Copy ───────────────────────────────── */
+    document.getElementById('btnRunCode').addEventListener('click', () => {
+      parseUserCodeAndUpdateProps();
+      renderCurrentDemoOnMap();
+    });
+
+    document.getElementById('btnResetCode').addEventListener('click', () => {
+      const demo = COMPONENT_DEMOS.find(d => d.id === activeComponentId);
+      if (!demo) return;
+      currentProps = { ...demo.defaults };
+      renderQuickControls(demo);
+      updateEditorContent(demo.generateCode(currentProps));
+      renderCurrentDemoOnMap();
+    });
+
+    document.getElementById('btnCopyCode').addEventListener('click', () => {
+      const code = codeEditor.value;
+      navigator.clipboard.writeText(code).then(() => {
+        const txt = document.getElementById('txtCopyStatus');
+        txt.innerText = 'Đã sao chép!';
+        setTimeout(() => { txt.innerText = 'Copy Code'; }, 2000);
+      });
+    });
+
+    /* ─── Search Filtering in Catalog ───────────────────────────────────── */
+    document.getElementById('catalogSearchInput').addEventListener('input', () => {
+      renderSidebarCatalog();
+    });
+
+    /* ─── Mobile Sidebar Toggle ─────────────────────────────────────────── */
+    const btnToggleSidebar = document.getElementById('btnToggleSidebar');
+    const sidebarCatalog = document.getElementById('sidebarCatalog');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+    btnToggleSidebar.addEventListener('click', () => {
+      sidebarCatalog.classList.toggle('open');
+      sidebarOverlay.classList.toggle('open');
+    });
+
+    sidebarOverlay.addEventListener('click', () => {
+      sidebarCatalog.classList.remove('open');
+      sidebarOverlay.classList.remove('open');
+    });
+
+    /* ─── Theme Toggle ──────────────────────────────────────────────────── */
+    const btnThemeToggle = document.getElementById('btnThemeToggle');
+    function initTheme() {
+      const saved = localStorage.getItem('sharemap_theme') || 
+        (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', saved);
+    }
+    initTheme();
+
+    btnThemeToggle.addEventListener('click', () => {
+      const cur = document.documentElement.getAttribute('data-theme');
+      const next = cur === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('sharemap_theme', next);
+    });
+
+    /* ─── App Bootstrap ─────────────────────────────────────────────────── */
+    window.addEventListener('DOMContentLoaded', () => {
+      renderSidebarCatalog();
+      selectComponent('add-marker');
+      initMapLibre();
+    });
+  </script>
+</body>
+</html>
